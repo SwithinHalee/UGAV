@@ -1,0 +1,25 @@
+# Build & executable outputs
+dist/
+build/ugav/
+*.exe
+*.spec.bak
+
+# Portable runtime data & vaults (never commit extracted game assets)
+ugav_data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite.bak
+.ugav_vault_marker
+
+# Python & tests
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+logs/
+staging/
+browser_profile/
+webview_storage/

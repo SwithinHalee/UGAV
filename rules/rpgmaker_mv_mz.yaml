@@ -1,0 +1,26 @@
+name: rpgmaker_mv_mz
+match:
+  required_files:
+    - "data/System.json"
+entities:
+  - glob: "data/Actors.json"
+    entity_type: actor
+    format: json_array
+  - glob: "data/Classes.json"
+    entity_type: class
+    format: json_array
+  - glob: "data/Skills.json"
+    entity_type: skill
+    format: json_array
+  - glob: "data/Items.json"
+    entity_type: item
+    format: json_array
+  - glob: "data/Weapons.json"
+    entity_type: weapon
+    format: json_array
+  - glob: "data/Armors.json"
+    entity_type: armor
+    format: json_array
+  - glob: "data/Enemies.json"
+    entity_type: enemy
+    format: json_array

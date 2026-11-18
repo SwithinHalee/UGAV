@@ -1,0 +1,6 @@
+name: generic_localization
+match: {}
+localizations:
+  - glob: "**/lang_*.json"
+    format: json_kv
+    lang_regex: "lang_([a-zA-Z_-]+)\\.json"

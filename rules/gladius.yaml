@@ -1,0 +1,75 @@
+name: gladius_xml
+match:
+  required_dirs:
+    - "Data/World"
+    - "Data/Core/Languages"
+localizations:
+  - glob: "Data/Core/Languages/*/*.xml"
+    format: xml_key_value
+    lang_regex: "Data/Core/Languages/([^/]+)/"
+    entry_tag: entry
+    key_attr: name
+    value_attr: value
+entities:
+  - glob: "Data/World/Factions/*.xml"
+    entity_type: faction
+    strip_prefix: "Data/World/Factions"
+    format: xml
+  - glob: "Data/World/Units/**/*.xml"
+    entity_type: unit
+    strip_prefix: "Data/World/Units"
+    format: xml
+    relations:
+      - from_parent_dir: true
+        relation_type: belongs_to_faction
+        target_type: faction
+      - xml_xpath: ".//weapons/weapon/@name"
+        relation_type: uses_weapon
+        target_type: weapon
+      - xml_xpath: ".//traits/trait/@name"
+        relation_type: has_trait
+        target_type: trait
+      - xml_xpath: ".//@requiredUpgrade"
+        relation_type: requires_upgrade
+        target_type: upgrade
+  - glob: "Data/World/Weapons/**/*.xml"
+    entity_type: weapon
+    strip_prefix: "Data/World/Weapons"
+    format: xml
+    relations:
+      - xml_xpath: ".//traits/trait/@name"
+        relation_type: has_trait
+        target_type: trait
+      - xml_xpath: ".//@requiredUpgrade"
+        relation_type: requires_upgrade
+        target_type: upgrade
+  - glob: "Data/World/Buildings/**/*.xml"
+    entity_type: building
+    strip_prefix: "Data/World/Buildings"
+    format: xml
+    relations:
+      - from_parent_dir: true
+        relation_type: belongs_to_faction
+        target_type: faction
+      - xml_xpath: ".//@requiredUpgrade"
+        relation_type: requires_upgrade
+        target_type: upgrade
+  - glob: "Data/World/Upgrades/**/*.xml"
+    entity_type: upgrade
+    strip_prefix: "Data/World/Upgrades"
+    format: xml
+    relations:
+      - from_parent_dir: true
+        relation_type: belongs_to_faction
+        target_type: faction
+      - xml_xpath: ".//@requiredUpgrade"
+        relation_type: requires_upgrade
+        target_type: upgrade
+  - glob: "Data/World/Traits/**/*.xml"
+    entity_type: trait
+    strip_prefix: "Data/World/Traits"
+    format: xml
+  - glob: "Data/World/Items/**/*.xml"
+    entity_type: item
+    strip_prefix: "Data/World/Items"
+    format: xml

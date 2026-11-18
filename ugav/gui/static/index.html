@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UGAV — Universal Game Asset Vault &amp; Translator</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">UG</div>
+        <div>
+          <div class="brand-title">UGAV</div>
+          <div class="brand-sub">Universal Game Vault</div>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-btn active" data-tab="discover">Discover &amp; Scan</button>
+        <button class="nav-btn" data-tab="assets">Vault &amp; Assets</button>
+        <button class="nav-btn" data-tab="entities">Entities &amp; API</button>
+        <button class="nav-btn" data-tab="settings">Settings &amp; Tools</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="stat-pill">
+          <span class="label">Disk Free</span>
+          <span id="health-free-gb">-- GB</span>
+        </div>
+        <div class="stat-pill">
+          <span class="label">Status</span>
+          <span id="health-status" class="badge badge-ok">Ready</span>
+        </div>
+        <a class="btn btn-ghost btn-sm" href="/docs" target="_blank" rel="noopener">Open API Docs (/docs)</a>
+        <button id="btn-quit-app" class="btn btn-danger btn-sm">Quit App</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- TAB 1: DISCOVER & SCAN -->
+      <section id="tab-discover" class="tab-panel active">
+        <header class="panel-header">
+          <div>
+            <h1>Discover &amp; Scan Games</h1>
+            <p class="muted">Auto-detect game yang terpasang di device ini atau pilih folder / file .exe secara manual.</p>
+          </div>
+          <button id="btn-refresh-discover" class="btn btn-primary">Refresh Auto-Detect</button>
+        </header>
+
+        <div class="card manual-box">
+          <div class="card-title">Pilih Path Game Manual</div>
+          <div class="input-row">
+            <input id="manual-path-input" type="text" placeholder="Contoh: C:\Games\Warhammer 40K - Gladius atau ...\Game.exe" />
+            <button id="btn-pick-folder" class="btn btn-secondary">Browse Folder</button>
+            <button id="btn-pick-exe" class="btn btn-secondary">Browse .EXE</button>
+            <button id="btn-inspect-manual" class="btn btn-primary">Inspect</button>
+          </div>
+          <div id="manual-msg" class="muted small"></div>
+        </div>
+
+        <!-- Inspect & Scan Configuration Card -->
+        <div id="inspect-card" class="card hidden">
+          <div class="inspect-header">
+            <div>
+              <h2 id="inspect-name">--</h2>
+              <div id="inspect-path" class="mono muted small">--</div>
+            </div>
+            <div id="inspect-badges" class="badges-row"></div>
+          </div>
+
+          <div class="inspect-metrics">
+            <div class="metric"><span class="label">Engine</span><strong id="inspect-engine">--</strong></div>
+            <div class="metric"><span class="label">Platform / Arch</span><strong id="inspect-arch">--</strong></div>
+            <div class="metric"><span class="label">Total Files</span><strong id="inspect-files">--</strong></div>
+            <div class="metric"><span class="label">Total Size</span><strong id="inspect-size">--</strong></div>
+          </div>
+
+          <div id="inspect-online-warn" class="alert alert-warn hidden">
+            Target terdeteksi sebagai Online Stub / Launcher-only dan secara default dilewati. Centang Force Scan jika tetap ingin mengindeks file lokalnya.
+          </div>
+
+          <div class="scan-options-grid">
+            <label class="field">
+              <span>Copy Mode</span>
+              <select id="opt-copy-mode">
+                <option value="media_only" selected>Media Only (Gambar, Audio, Video, Model 3D saja)</option>
+                <option value="api_ready">API Ready (Media + Data JSON/XML + Teks, tanpa .exe/script)</option>
+                <option value="vault_extracted">vault_extracted (Semua hasil ekstrak &amp; file lepas)</option>
+                <option value="vault_selective">vault_selective (Pilih kategori manual)</option>
+                <option value="index_only">index_only (Catat metadata/TOC saja, hemat disk)</option>
+                <option value="vault_all">vault_all (Semua termasuk arsip mentah)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Max File Size (MB)</span>
+              <input id="opt-max-mb" type="number" value="500" min="1" />
+            </label>
+            <label class="field">
+              <span>Exclude Extensions (koma)</span>
+              <input id="opt-exclude-ext" type="text" placeholder=".usm, .mkv, .mp4" />
+            </label>
+            <label class="field" style="grid-column: 1 / -1">
+              <span>Custom Vault / Output Location (per game, opsional)</span>
+              <div class="input-row">
+                <input id="opt-vault-dir" type="text" placeholder="Default: vault/&lt;game-slug&gt;" />
+                <button id="btn-pick-vault-dir" class="btn btn-secondary btn-sm" type="button">Browse...</button>
+              </div>
+            </label>
+            <div id="custom-categories-wrap" class="field hidden" style="grid-column: 1 / -1">
+              <span>Pilih Kategori yang Disalin</span>
+              <div class="inline-actions" style="gap: 12px; margin-top: 4px;">
+                <label class="inline-actions"><input type="checkbox" class="cat-chk" value="texture" checked /> Gambar/Tekstur</label>
+                <label class="inline-actions"><input type="checkbox" class="cat-chk" value="audio" checked /> Audio</label>
+                <label class="inline-actions"><input type="checkbox" class="cat-chk" value="video" checked /> Video</label>
+                <label class="inline-actions"><input type="checkbox" class="cat-chk" value="model_3d" checked /> Model 3D</label>
+                <label class="inline-actions"><input type="checkbox" class="cat-chk" value="data" /> Data (XML/JSON)</label>
+                <label class="inline-actions"><input type="checkbox" class="cat-chk" value="localization" /> Teks/Bahasa</label>
+              </div>
+            </div>
+            <label class="field checkbox-field">
+              <input id="opt-convert-textures" type="checkbox" checked />
+              <span>Konversi .dds / .tga / .rpgmvp ke .png preview</span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="opt-carve-unknown" type="checkbox" />
+              <span>Jalankan Binary Carver pada kontainer tak dikenal</span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="opt-force-online" type="checkbox" />
+              <span>Force scan walau terdeteksi online stub</span>
+            </label>
+          </div>
+
+          <div class="action-row">
+            <button id="btn-start-scan" class="btn btn-accent">Mulai Scan ke Vault &amp; DB</button>
+            <button id="btn-close-inspect" class="btn btn-ghost">Tutup</button>
+          </div>
+        </div>
+
+        <!-- Live Scan Progress Card -->
+        <div id="scan-progress-card" class="card hidden">
+          <div class="inspect-header">
+            <div>
+              <h3 id="scan-phase-title">Scanning...</h3>
+              <div id="scan-current-path" class="mono muted small">--</div>
+            </div>
+            <button id="btn-cancel-scan" class="btn btn-danger btn-sm">Cancel Safely</button>
+          </div>
+          <div class="progress-track">
+            <div id="scan-progress-bar" class="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="inspect-metrics">
+            <div class="metric"><span class="label">Files Scanned</span><strong id="prog-files">0 / 0</strong></div>
+            <div class="metric"><span class="label">Assets Indexed</span><strong id="prog-assets">0</strong></div>
+            <div class="metric"><span class="label">Copied / Dedup</span><strong id="prog-bytes">0 MB</strong></div>
+            <div class="metric"><span class="label">Entities / Warnings</span><strong id="prog-ent-warn">0 / 0</strong></div>
+          </div>
+          <div id="scan-result-banner" class="alert alert-ok hidden"></div>
+        </div>
+
+        <h2 class="section-title">Game Terdeteksi Otomatis (<span id="discover-count">0</span>)</h2>
+        <div id="discovered-grid" class="cards-grid"></div>
+      </section>
+
+      <!-- TAB 2: VAULT & ASSETS -->
+      <section id="tab-assets" class="tab-panel">
+        <header class="panel-header">
+          <div>
+            <h1>Vault &amp; Asset Explorer</h1>
+            <p class="muted">Jelajahi seluruh aset yang telah diindeks &amp; disalin ke Content-Addressed Vault.</p>
+          </div>
+          <div class="inline-actions">
+            <select id="asset-game-select"></select>
+            <select id="export-filter-select" style="flex:0 0 auto; min-width:210px;">
+              <option value="media" selected>Export: Media Only</option>
+              <option value="api_ready">Export: API Ready (Media + Data)</option>
+              <option value="texture">Export: Gambar Saja</option>
+              <option value="all">Export: Semua Aset</option>
+            </select>
+            <button id="btn-export-tree" class="btn btn-secondary btn-sm">Export Clean Folder</button>
+          </div>
+        </header>
+
+        <div class="filters-bar">
+          <input id="asset-search-input" type="text" placeholder="Cari path aset (contoh: Armiger, .dds, .json)..." />
+          <select id="asset-category-select">
+            <option value="">Semua Kategori</option>
+            <option value="texture">texture</option>
+            <option value="audio">audio</option>
+            <option value="video">video</option>
+            <option value="data">data</option>
+            <option value="localization">localization</option>
+            <option value="model_3d">model_3d</option>
+            <option value="archive">archive</option>
+            <option value="script">script</option>
+            <option value="unknown">unknown</option>
+          </select>
+          <select id="asset-enc-select">
+            <option value="">Semua Status Enkripsi</option>
+            <option value="none">Plain (none)</option>
+            <option value="compressed">Compressed</option>
+            <option value="suspected_encrypted">Suspected Encrypted</option>
+          </select>
+          <button id="btn-asset-filter" class="btn btn-primary btn-sm">Filter</button>
+        </div>
+
+        <div class="split-pane">
+          <div class="table-pane card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Original Path</th>
+                  <th>Category</th>
+                  <th>Size</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="assets-tbody"></tbody>
+            </table>
+            <div class="pagination">
+              <button id="btn-assets-prev" class="btn btn-ghost btn-sm">Prev</button>
+              <span id="assets-page-info" class="muted small">Page 1</span>
+              <button id="btn-assets-next" class="btn btn-ghost btn-sm">Next</button>
+            </div>
+          </div>
+
+          <div class="preview-pane card">
+            <div class="card-title">Asset Preview</div>
+            <div id="asset-preview-meta" class="muted small">Klik salah satu aset di tabel untuk melihat preview.</div>
+            <div id="asset-preview-body" class="preview-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: ENTITIES & API -->
+      <section id="tab-entities" class="tab-panel">
+        <header class="panel-header">
+          <div>
+            <h1>Entities &amp; API/Wiki Preview</h1>
+            <p class="muted">Pencarian Full-Text (FTS5) pada data game yang sudah diterjemahkan beserta relasinya.</p>
+          </div>
+          <select id="entity-game-select"></select>
+        </header>
+
+        <div class="filters-bar">
+          <input id="entity-search-input" type="text" placeholder="Cari entitas via FTS5 (contoh: Armiger, Meltagun, Adeptus)..." />
+          <button id="btn-entity-search" class="btn btn-primary btn-sm">Search FTS5</button>
+        </div>
+
+        <div class="split-pane">
+          <div class="table-pane card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Display Name</th>
+                  <th>Type</th>
+                  <th>External Key</th>
+                </tr>
+              </thead>
+              <tbody id="entities-tbody"></tbody>
+            </table>
+            <div class="pagination">
+              <button id="btn-entities-prev" class="btn btn-ghost btn-sm">Prev</button>
+              <span id="entities-page-info" class="muted small">Page 1</span>
+              <button id="btn-entities-next" class="btn btn-ghost btn-sm">Next</button>
+            </div>
+          </div>
+
+          <div class="preview-pane card">
+            <div class="card-title">Entity Inspector</div>
+            <div id="entity-detail-body" class="preview-body">
+              <p class="muted small">Pilih entitas untuk melihat JSON, relasi, dan API endpoint-nya.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: SETTINGS & TOOLS -->
+      <section id="tab-settings" class="tab-panel">
+        <header class="panel-header">
+          <div>
+            <h1>Settings, Portable Vault &amp; Diagnostics</h1>
+            <p class="muted">Kelola batas disk, external tools, keyring dekripsi, relocate/merge DB antar device, dan laporan diagnostik.</p>
+          </div>
+        </header>
+
+        <div class="settings-grid">
+          <div class="card">
+            <div class="card-title">Konfigurasi Vault &amp; Safety Floor</div>
+            <label class="field">
+              <span>Minimum Free Disk Space Floor (GB)</span>
+              <input id="set-min-free" type="number" step="0.5" value="2.0" />
+            </label>
+            <label class="field">
+              <span>Extra Scan Roots (pisahkan dengan ;)</span>
+              <input id="set-extra-roots" type="text" placeholder="D:\Games;E:\PortableGames" />
+            </label>
+            <button id="btn-save-settings" class="btn btn-primary btn-sm">Simpan Settings</button>
+            <div id="settings-msg" class="muted small"></div>
+          </div>
+
+          <div class="card">
+            <div class="inspect-header">
+              <div class="card-title" style="margin-bottom:0">External Tools &amp; Plugins Status</div>
+              <button id="btn-refresh-tools" class="btn btn-ghost btn-sm">Refresh</button>
+            </div>
+            <div id="tools-list" class="tools-list"></div>
+            <div id="tools-msg" class="muted small" style="margin-top:8px"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Portabilitas Antar Device (Merge Vault / Diagnostics)</div>
+            <div class="input-row">
+              <input id="merge-dir-input" type="text" placeholder="Path ke ugav_data dari device lain" />
+              <button id="btn-merge-vault" class="btn btn-secondary btn-sm">Merge Vault</button>
+            </div>
+            <div id="merge-msg" class="muted small"></div>
+            <hr class="sep" />
+            <button id="btn-download-diag" class="btn btn-ghost btn-sm">Lihat Sanitized Diagnostic Report</button>
+            <pre id="diag-preview" class="code-box hidden"></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
